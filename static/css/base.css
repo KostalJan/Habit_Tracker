@@ -1,0 +1,16 @@
+/* Layout & typografie */
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
+header, nav, main { max-width: 900px; margin: 0 auto; padding: 12px; }
+header { padding-top: 16px; }
+
+/* Navigace */
+nav a { margin-right: 12px; text-decoration: none; }
+.right { float: right; }
+.clearfix { clear: both; }
+
+/* Tabulky */
+table { border-collapse: collapse; width: 100%; }
+th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+
+/* Utility */
+.muted { color: #666; }

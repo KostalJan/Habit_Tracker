@@ -27,5 +27,6 @@ def healthcheck(_request):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("healthz/", healthcheck, name="healthz"),
+    path("accounts/", include("django.contrib.auth.urls")),  # login/logout
     path("", include("habits.urls")),
 ]

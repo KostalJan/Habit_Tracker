@@ -1,0 +1,30 @@
+{% extends "base.html" %} {% block content %}
+<h2>Statistiky</h2>
+{% if stats %}
+<table>
+  <thead>
+    <tr>
+      <th>Návyk</th>
+      <th>Periodicita</th>
+      <th>Aktuální streak</th>
+      <th>Nejdelší streak</th>
+      <th>Úspěšnost 7d</th>
+      <th>Úspěšnost 30d</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in stats %}
+    <tr>
+      <td>{{ s.name }}</td>
+      <td>{{ s.periodicity }}</td>
+      <td>{{ s.current_streak }}</td>
+      <td>{{ s.longest_streak }}</td>
+      <td>{{ s.success_7d|floatformat:2 }}</td>
+      <td>{{ s.success_30d|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">Zatím tu nic není. Přidej si nějaké návyky a logy.</p>
+{% endif %} {% endblock %}
