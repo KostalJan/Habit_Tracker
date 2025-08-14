@@ -1,21 +1,38 @@
 from datetime import date
 
 from django.http import HttpResponse
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+from .stats import compute_user_stats
+
+
+class StatisticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = compute_user_stats(request.user)
+        return Response({"habits": data})
+
 
 from .models import Habit, HabitLog
 from .permissions import IsOwner
-from .serializers import HabitLogSerializer, HabitSerializer
+from .serializers import (
+    HabitLogCreateSerializer,
+    HabitLogSerializer,
+    HabitSerializer,
+)
 
 
 def home(_request):
     return HttpResponse("HabitTracker Mini – běží.")
 
 
-class HabitViewSet(ReadOnlyModelViewSet):
+class HabitViewSet(viewsets.ModelViewSet):
     """
-    /api/habits/ — list/retrieve jen vlastních návyků
+    /api/habits/ — full CRUD nad vlastními návyky
     """
     serializer_class = HabitSerializer
     permission_classes = [IsAuthenticated, IsOwner]
@@ -23,13 +40,21 @@ class HabitViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         return Habit.objects.filter(user=self.request.user).order_by("id")
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
-class HabitLogViewSet(ReadOnlyModelViewSet):
+
+class HabitLogViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     """
-    /api/logs/?habit_id=&date__gte=&date__lte=&ordering=-date
-    Vrací pouze logy patřící přihlášenému uživateli.
+    /api/logs/ — list/retrieve/create/delete jen pro logy přihlášeného uživatele.
+    Filtrování: habit_id, date__gte, date__lte, ordering (date/id).
     """
-    serializer_class = HabitLogSerializer
     permission_classes = [IsAuthenticated, IsOwner]
 
     def get_queryset(self):
@@ -42,7 +67,7 @@ class HabitLogViewSet(ReadOnlyModelViewSet):
             try:
                 qs = qs.filter(habit_id=int(habit_id))
             except ValueError:
-                pass  # ignorování nevalidního vstupu
+                pass
 
         d_gte = self.request.query_params.get("date__gte")
         if d_gte:
@@ -63,3 +88,9 @@ class HabitLogViewSet(ReadOnlyModelViewSet):
             qs = qs.order_by(ordering)
 
         return qs
+
+    def get_serializer_class(self):
+        return HabitLogCreateSerializer if self.action == "create" else HabitLogSerializer
+
+    http_method_names = ["get", "post", "delete", "head", "options"]
+
