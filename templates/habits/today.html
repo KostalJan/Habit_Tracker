@@ -6,8 +6,7 @@
 <ul>
   {% for item in daily %}
   <li>
-    {{ item.habit.name }} — {% if item.checked %} splněno dnes {% else %}
-    nesplněno dnes {% endif %}
+    {{ item.habit.name }} — {% if item.checked %} splněno dnes {% else %} nesplněno dnes {% endif %}
   </li>
   {% endfor %}
 </ul>

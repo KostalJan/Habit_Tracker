@@ -1,11 +1,16 @@
 from datetime import date
+import datetime as dt
+from collections import defaultdict
 
 from django.http import HttpResponse
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
+from .models import Habit, HabitLog
 from .stats import compute_user_stats
 
 
@@ -27,7 +32,7 @@ from .serializers import (
 
 
 def home(_request):
-    return HttpResponse("HabitTracker Mini – běží.")
+    return HttpResponse("HabitTracker běží.")
 
 
 class HabitViewSet(viewsets.ModelViewSet):
@@ -93,4 +98,39 @@ class HabitLogViewSet(
         return HabitLogCreateSerializer if self.action == "create" else HabitLogSerializer
 
     http_method_names = ["get", "post", "delete", "head", "options"]
+    
+
+@login_required
+def today_view(request):
+    user = request.user
+    today = dt.date.today()
+    monday = today - dt.timedelta(days=today.weekday())
+
+    habits = Habit.objects.filter(user=user).order_by("id")
+    logs_today = {
+        x["habit_id"]
+        for x in HabitLog.objects.filter(habit__user=user, date=today).values("habit_id")
+    }
+    logs_this_week = defaultdict(int)
+    for d, hid, val in HabitLog.objects.filter(habit__user=user, date__gte=monday, date__lte=today).values_list(
+        "date", "habit_id", "value"
+    ):
+        logs_this_week[hid] += int(val)
+
+    daily = []
+    weekly = []
+    for h in habits:
+        if h.periodicity == Habit.Periodicity.DAILY:
+            daily.append({"habit": h, "checked": h.id in logs_today})
+        else:
+            weekly.append({"habit": h, "count": logs_this_week.get(h.id, 0)})
+
+    context = {"today": today, "daily": daily, "weekly": weekly}
+    return render(request, "habits/today.html", context)
+
+
+@login_required
+def stats_page(request):
+    data = compute_user_stats(request.user)
+    return render(request, "habits/stats.html", {"stats": data})
 
