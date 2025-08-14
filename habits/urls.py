@@ -1,9 +1,13 @@
-from django.http import HttpResponse
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import SimpleRouter
 
+from .views import HabitLogViewSet, HabitViewSet, home
 
-def home(_request):
-    return HttpResponse("Habit Tracker běží")
+router = SimpleRouter()
+router.register("api/habits", HabitViewSet, basename="habits")
+router.register("api/logs", HabitLogViewSet, basename="logs")
 
-
-urlpatterns = [path("", home, name="home")]
+urlpatterns = [
+    path("", home, name="home"),
+    path("", include(router.urls)),
+]
