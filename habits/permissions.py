@@ -4,7 +4,7 @@ from .models import Habit, HabitLog
 
 class IsOwner(BasePermission):
     """
-    Umožní čtení jen vlastníkovi objektu.
+    Umožní jen vlastníkovi čtení a zápis objektu.
     Souběžně filtruje querysety podle přihlášeného uživatele.
     """
 
@@ -12,8 +12,6 @@ class IsOwner(BasePermission):
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        if request.method not in SAFE_METHODS:
-            return False
         if isinstance(obj, Habit):
             return obj.user_id == request.user.id
         if isinstance(obj, HabitLog):
