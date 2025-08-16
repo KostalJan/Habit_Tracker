@@ -1,0 +1,52 @@
+<div id="today-list">
+  <h2>Dnešní přehled ({{ today }})</h2>
+
+  <h3>Denní návyky</h3>
+  {% if daily %}
+    <ul>
+      {% for item in daily %}
+        <li>
+          {{ item.habit.name }} —
+          {% if item.checked %}✅ splněno dnes{% else %}⏳ nesplněno dnes{% endif %}
+          <form
+            hx-post="{% url 'toggle_today' item.habit.id %}"
+            hx-target="#today-list"
+            hx-swap="outerHTML"
+            style="display:inline"
+            method="post"
+          >
+            {% csrf_token %}
+            <button type="submit">
+              {% if item.checked %}Zrušit{% else %}Splněno dnes{% endif %}
+            </button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Žádné denní návyky.</p>
+  {% endif %}
+
+  <h3>Týdenní návyky</h3>
+  {% if weekly %}
+    <ul>
+      {% for item in weekly %}
+        <li>
+          {{ item.habit.name }} — {{ item.count }} / {{ item.habit.target_per_period }} tento týden
+          <form
+            hx-post="{% url 'toggle_today' item.habit.id %}"
+            hx-target="#today-list"
+            hx-swap="outerHTML"
+            style="display:inline"
+            method="post"
+          >
+            {% csrf_token %}
+            <button type="submit">+1 dnes (toggle)</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Žádné týdenní návyky.</p>
+  {% endif %}
+</div>

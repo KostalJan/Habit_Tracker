@@ -1,29 +1,4 @@
-{% extends "base.html" %} {% block content %}
-<h2>Dnešní přehled ({{ today }})</h2>
-
-<h3>Denní návyky</h3>
-{% if daily %}
-<ul>
-  {% for item in daily %}
-  <li>
-    {{ item.habit.name }} — {% if item.checked %} splněno dnes {% else %} nesplněno dnes {% endif %}
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p class="muted">Žádné denní návyky.</p>
-{% endif %}
-
-<h3>Týdenní návyky</h3>
-{% if weekly %}
-<ul>
-  {% for item in weekly %}
-  <li>
-    {{ item.habit.name }} — {{ item.count }} / {{ item.habit.target_per_period
-    }} tento týden
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p class="muted">Žádné týdenní návyky.</p>
-{% endif %} {% endblock %}
+{% extends "base.html" %}
+{% block content %}
+  {% include "habits/_today_list.html" %}
+{% endblock %}
